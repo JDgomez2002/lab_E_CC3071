@@ -1,11 +1,13 @@
 import pydotplus
+from utils.yalexReader import *
 
 class LR0:
     def __init__(self, grammar):
         self.grammar = grammar
         self.states = []
         self.transitions = {}
-        self.generateLR0()
+        self.kernelItems = []
+        # self.generateLR0()
 
     def closure(self, I):
         J = []
@@ -193,3 +195,12 @@ class LR0:
         dot.write_pdf("result/LR0.pdf")
 
         return dot
+
+    def verifyYalex(self, yalexFile):
+        values, tokens, dictTokens, dict = readYalexFile(yalexFile)
+        
+        for state in self.grammar["T"]:
+            if state not in tokens:
+                return True, f"{state} not in tokens of {yalexFile}"
+            
+        return False, "Yalex file has all tokens correct"

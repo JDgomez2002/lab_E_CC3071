@@ -127,47 +127,59 @@ def setValues(values):
     return values
 
 
-def readYalexFile(regexs, file):
+def readYalexFile(file, regexs=None):
 
-    print("\n#########################################################################################")
-    print("####################################### DFAs ############################################")
-    print("#########################################################################################\n")
+    regexs = {
+        "Comments": "\"(*\" (^*)* *\"*)\"",
+        "Header": "{ *(^})*}",
+        "Declaration": "let +['a'-'z']* +=",
+        "Variables": "('['(^])*]|^[ \n]*)+",
+        "Rules": "rule *tokens *=",
+        "InitialToken": "['&'-'}']+",
+        "Tokens": "'|' *['\"'-'}']*",
+        "Returns": "{ *(^})*}",
+        "Trailer": "{ *(_)*",
+    }
+
+    # print("\n#########################################################################################")
+    # print("####################################### DFAs ############################################")
+    # print("#########################################################################################\n")
 
     commentsRegex = regexs['Comments']
     commentsStates, commentsTransitions, initCommentsStates, finalCommentsStates = createDFA(commentsRegex)
-    print("Comments DFA done")
+    # print("Comments DFA done")
 
     headersRegex = regexs['Header']
     headerStates, headersTransitions, initialHeadersStates, finalHeadersStates = createDFA(headersRegex)
-    print("Headers DFA done")
+    # print("Headers DFA done")
 
     declarationRegex = regexs['Declaration']
     declarationStates, declarationTransitions, initDeclarationStates, finalDeclarationStates = createDFA(declarationRegex)
-    print("Declaration DFA done")
+    # print("Declaration DFA done")
 
     variablesRegex = regexs['Variables']
     variablesStates, variablesTransitions, initVariablesStates, finalVariablesStates = createDFA(variablesRegex)
-    print("Variables DFA done")
+    # print("Variables DFA done")
 
     rulesRegex = regexs['Rules']
     rulesStates, rulesTransitions, initRulesStates, finalRulesStates = createDFA(rulesRegex)
-    print("Rules DFA done")
+    # print("Rules DFA done")
 
     initToken = regexs['InitialToken']
     initTokenStates, initTokenTransitions, initInitTokenStates, finalInitTokenStates = createDFA(initToken)
-    print("1st Token DFA done (without '|')")
+    # print("1st Token DFA done (without '|')")
 
     tokensRegex = regexs['Tokens']
     tokensStates, tokensTransitions, initTokensStates, finalTokensStates = createDFA(tokensRegex)
-    print("Tokens DFA done")
+    # print("Tokens DFA done")
 
     returnsRegex = regexs['Returns']
     returnsStates, returnsTransitions, initReturnsStates, finalReturnsStates = createDFA(returnsRegex)
-    print("Returns DFA done")
+    # print("Returns DFA done")
 
     trailerRegex = regexs['Trailer']
     trailerStates, trailerTransitions, initTrailerStates, finalTrailerStates = createDFA(trailerRegex)
-    print("Trailer DFA done\n")
+    # print("Trailer DFA done\n")
 
     data = readYalex(file)
     i = 0
@@ -183,14 +195,14 @@ def readYalexFile(regexs, file):
     headerBooleans = False
     tokenBooleans = False
 
-    print("\n#########################################################################################")
-    print("#################################### YalexReader ########################################")
-    print("#########################################################################################\n")
+    # print("\n#########################################################################################")
+    # print("#################################### YalexReader ########################################")
+    # print("#########################################################################################\n")
 
     while i < dataLength:
         bol, num, newValues = DFASimulator.exec(commentsTransitions, initCommentsStates, finalCommentsStates, data, i)
         if bol:
-            print("\nComment: " + newValues)
+            # print("\nComment: " + newValues)
             dict[counter] = newValues
             counter += 1
             i = num
@@ -199,7 +211,7 @@ def readYalexFile(regexs, file):
         if headerBooleans == False:
             bol, num, newValues = DFASimulator.exec(headersTransitions, initialHeadersStates, finalHeadersStates, data, i)
             if bol and headerBooleans == False:
-                print("\nHeader: " + newValues)
+                # print("\nHeader: " + newValues)
                 dict['Header'] = newValues
                 counter += 1
                 i = num
@@ -208,7 +220,7 @@ def readYalexFile(regexs, file):
 
         bol, num, newValues = DFASimulator.exec(rulesTransitions, initRulesStates, finalRulesStates, data, i)
         if bol:
-            print("\nRules: " + newValues)
+            # print("\nRules: " + newValues)
             dict[counter] = newValues
             counter += 1
             readTokens = True
@@ -223,7 +235,7 @@ def readYalexFile(regexs, file):
         if readTokens == False:
             bol, num, newValues = DFASimulator.exec(declarationTransitions, initDeclarationStates, finalDeclarationStates, data, i)
             if bol:
-                print("\nDeclaration: " + newValues)
+                # print("\nDeclaration: " + newValues)
                 dict[counter] = newValues
                 listValues = newValues.split()
                 variables.append(listValues[1])
@@ -233,7 +245,7 @@ def readYalexFile(regexs, file):
 
             bol, num, newValues = DFASimulator.exec(variablesTransitions, initVariablesStates, finalVariablesStates, data, i)
             if bol:
-                print("Value: " + newValues)
+                # print("Value: " + newValues)
                 dict[counter] = newValues
                 if variables != [] and len(variables) < 2:
                     values[variables.pop()] = newValues
@@ -250,7 +262,7 @@ def readYalexFile(regexs, file):
         
         bol, num, newValues = DFASimulator.exec(trailerTransitions, initTrailerStates, finalTrailerStates, data, i)
         if bol:
-            print("\nTrailer: " + newValues)
+            # print("\nTrailer: " + newValues)
             dict['Trailer'] = newValues
             counter += 1
             i = num
@@ -260,7 +272,7 @@ def readYalexFile(regexs, file):
 
             bol, num, newValues = DFASimulator.exec(tokensTransitions, initTokensStates, finalTokensStates, data, i)
             if bol:
-                print("\nToken: " + newValues)
+                # print("\nToken: " + newValues)
                 dict[counter] = newValues
                 listValues = newValues.split()
                 tokens.append(listValues[0])
@@ -272,7 +284,7 @@ def readYalexFile(regexs, file):
                 while True:
                     bol, num, newValues = DFASimulator.exec(returnsTransitions, initReturnsStates, finalReturnsStates, data, i)
                     if bol:
-                        print("\nReturn: " + newValues)
+                        # print("\nReturn: " + newValues)
                         dict[counter] = newValues
                         if tempTokens != []:
                             dictTokens[tempTokens.pop()] = newValues
@@ -295,7 +307,7 @@ def readYalexFile(regexs, file):
             if tokenBooleans == False:
                 bol, num, newValues = DFASimulator.exec(initTokenTransitions, initInitTokenStates, finalInitTokenStates, data, i)
                 if bol:
-                    print("\nToken: " + newValues)
+                    # print("\nToken: " + newValues)
                     dict[counter] = newValues
                     tokens.append(newValues)
                     tempTokens.append(newValues)
@@ -306,7 +318,7 @@ def readYalexFile(regexs, file):
                     while True:
                         bol, num, newValues = DFASimulator.exec(returnsTransitions, initReturnsStates, finalReturnsStates, data, i)
                         if bol:
-                            print("Return: " + newValues)
+                            # print("Return: " + newValues)
                             dict[counter] = newValues
                             if tempTokens != []:
                                 dictTokens[tempTokens.pop()] = newValues
