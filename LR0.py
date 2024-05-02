@@ -117,3 +117,79 @@ class LR0:
         self.grammar = grammar
 
         return states, transitions, grammar
+
+    def graphLR0(self):
+
+        states = self.states
+        transitions = self.transitions
+        grammar = self.grammar
+
+        dot = pydotplus.Dot(
+            graph_type="digraph", rankdir="TB", fontname="SF Mono", fontsize="11"
+        )
+
+        for i, state in enumerate(states):
+            stateLabel = f"<\n<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'>\n"
+            stateLabel += f"<TR><TD COLSPAN='2'><B>I{i}</B></TD></TR>\n"
+
+            kernelItems = [item for item in state if item[1][0] != "." or item == state[0]]
+            for item in kernelItems:
+                if item[0] == grammar["P"][0][0] and "." == item[1][-1]:
+                    break
+
+            stateLabel += "<TR><TD COLSPAN='2'><B>Kernel items</B></TD></TR>\n"
+            for item in kernelItems:
+                stateLabel += f"<TR><TD>{item[0]} → {' '.join(item[1])}</TD></TR>\n"
+
+            for item in state:
+                if item not in kernelItems:
+                    stateLabel += "<TR><TD COLSPAN='2'><B>Closure items</B></TD></TR>\n"
+                    break
+
+            for item in state:
+                if item not in kernelItems:
+                    stateLabel += (
+                        f"<TR><TD>{item[0]} → {' '.join(item[1])}</TD></TR>\n"
+                    )
+
+            stateLabel += "</TABLE>\n>"
+
+            node = pydotplus.Node(
+                str(i),
+                label=stateLabel,
+                shape="plaintext",
+                fontsize="12",
+            )
+
+            dot.add_node(node)
+
+        for from_state, transition in transitions.items():
+            for symbol, to_state in transition.items():
+                if symbol == "$" and to_state == "Accept":
+                    accept_node = pydotplus.Node(
+                        "Accept",
+                        label="Accept",
+                        shape="plaintext",
+                        fontsize="14",
+                    )
+                    dot.add_node(accept_node)
+                    edge = pydotplus.Edge(
+                        str(from_state),
+                        "Accept",
+                        label="$",
+                        arrowhead="normal",
+                        fontsize="14",
+                    )
+                else:
+
+                    edge = pydotplus.Edge(
+                        str(from_state),
+                        str(to_state),
+                        label=symbol,
+                        fontsize="14",
+                    )
+                dot.add_edge(edge)
+
+        dot.write_pdf("result/LR0.pdf")
+
+        return dot
